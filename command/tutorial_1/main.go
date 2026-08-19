@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func main() {
 	/**
@@ -137,6 +140,8 @@ you are a good boy`
 		 * num, str, bool := getMany()
 	*/
 
+	fmt.Println("--------------------------------")
+	fmt.Println("11. functions")
 	var num, str, myBool = getMany()
 
 	fmt.Println(num, str, myBool)
@@ -157,10 +162,66 @@ you are a good boy`
 	 * fmt.Printf("Hello, %#v!n", any)
 	 */
 
-	fmt.Printf("Hello, %d from %s and %t", num, str, myBool)
+	fmt.Println("--------------------------------")
+	fmt.Println("12. printf")
 
+	fmt.Printf("Hello, %d from %s and %t\n", num, str, myBool)
+
+	/**
+	 * Lesson 13: if statements
+	 */
+	fmt.Println("--------------------------------")
+	fmt.Println("13. if statements")
+
+	if num != 100 {
+		fmt.Println("num is not 100")
+	} else if num > 100 {
+		fmt.Println("num is greater than 100")
+	} else {
+		fmt.Println("num is less than or equal to 100")
+	}
+
+	if num < 50 || num > 150 {
+		fmt.Println("num is less than 50 or greater than 150")
+	} else {
+		fmt.Println("num is between 50 and 150")
+	}
+
+	if num > 0 && num < 100 {
+		fmt.Println("num is greater than 0 and less than 100")
+	} else {
+		fmt.Println("num is less than or equal to 0 or greater than or equal to 100")
+	}
+
+	/**
+	 * Lesson 14: error handling
+	 *
+	 * Error handling is done using the error type.
+	 * err := errors.New("error message")
+	 * fmt.Println(err)
+	 */
+
+	fmt.Println("--------------------------------")
+	fmt.Println("14. error handling")
+
+	var err error = errors.New("my beautiful error message! 🎉")
+	fmt.Println(err)
+
+	err, value, str, bool := funReturnError(101)
+	fmt.Println(err, value, str, bool)
+
+	err, value, str, bool = funReturnError(99)
+	fmt.Println(err, value, str, bool)
 }
 
 func getMany() (int, string, bool) {
 	return 123, "Hello, World!", true
+}
+
+func funReturnError(value int) (error, int, string, bool) {
+	if value > 100 {
+		return errors.New("value is greater than 100"), 0, "", false
+	}
+
+	return nil, value, "Hello, World!", true
 }
