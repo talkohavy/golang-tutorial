@@ -212,6 +212,29 @@ you are a good boy`
 
 	err, value, str, bool = funReturnError(99)
 	fmt.Println(err, value, str, bool)
+
+	/**
+	 * Lesson 15: arrays, slices, maps
+	 */
+
+	fmt.Println("--------------------------------")
+	fmt.Println("15. arrays, slices, maps")
+
+	var intArr [3]int
+
+	intArr[1] = 10
+
+	fmt.Println(intArr)
+	fmt.Println(intArr[0])
+	fmt.Println(intArr[1:3])
+	fmt.Println(len(intArr))
+	fmt.Println((&intArr[0])) // <--- pointer to the first element of the array
+	fmt.Println((&intArr[1])) // <--- pointer to the second element of the array
+	fmt.Println((&intArr[2])) // <--- pointer to the third element of the array
+
+	var initializedIntArr [3]int = [3]int{1, 2, 3}
+
+	fmt.Println(initializedIntArr)
 }
 
 func getMany() (int, string, bool) {
