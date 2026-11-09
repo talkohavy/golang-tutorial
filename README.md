@@ -5,14 +5,14 @@
 Basic form:
 
 ```bash
-go build command/tutorial_1/main.go
+go build src/main.go
 ```
 
 This produces a binary file named the same as the input file, at the directory inside which you ran the command.
 To control the destination and rename the output file, run this:
 
 ```bash
-go build -o dist/index command/tutorial_1/main.go
+go build -o dist/index src/main.go
 ```
 
 # 2. To run a program:
@@ -34,5 +34,5 @@ depending on the destination and file name.
 # 3. To compile & run a program in a single command:
 
 ```bash
-go run command/tutorial_1/main.go
+go run src/main.go
 ```

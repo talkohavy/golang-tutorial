@@ -1,9 +1,7 @@
 package main
 
-import (
-	"errors"
-	"fmt"
-)
+import "errors"
+import "fmt"
 
 func main() {
 	/**
@@ -77,15 +75,22 @@ you are a good boy`
 
 	/**
 	 * Lesson 8: drop the var, use :=
+	 *
+	 * NOTE: the ":=" operator doesn't allow for types. It always infers the type from the value on the right. You cannot write a type next to the name.
+	 * You can still force a different type by converting the value. The type comes from that conversion, not from a type annotation.
 	 */
-	inferredInt1 := 123
-	inferredString1 := "Hello, World!"
-	inferredBool1 := true
+	 inferredInt1 := 123
+	 inferredString1 := "Hello, World!"
+	 inferredBool1 := true
+	 inferredInt2 := int8(123)
+	 inferredString2 := string(123)
+	 inferredBool2 := 0 != 1
+	//  inferredBool2 := bool(...) // <--- casting something other than a boolean will result in a compile error. i.e. bool(1) or bool("Hello, World!") will fail.
 
 	fmt.Println("--------------------------------")
 	fmt.Println("8. Drop the var, use :=")
 	fmt.Println(inferredInt1, inferredString1, inferredBool1)
-
+	fmt.Println(inferredInt2, inferredString2, inferredBool2)
 	/**
 	 * Lesson 9: increment & decrement
 	 */
