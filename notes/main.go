@@ -83,7 +83,7 @@ you are a good boy`
 	 inferredString1 := "Hello, World!"
 	 inferredBool1 := true
 	 inferredInt2 := int8(123)
-	 inferredString2 := string(123)
+	 inferredString2 := string(rune(123)) // <--- NOTE: this is "{" (the character with code 123), NOT "123". Use strconv.Itoa(123) for "123". (go vet rejects plain string(123) for this reason.)
 	 inferredBool2 := 0 != 1
 	//  inferredBool2 := bool(...) // <--- casting something other than a boolean will result in a compile error. i.e. bool(1) or bool("Hello, World!") will fail.
 
