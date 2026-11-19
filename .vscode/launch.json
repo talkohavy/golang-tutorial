@@ -14,6 +14,13 @@
       "request": "launch",
       "mode": "test",
       "program": "${workspaceFolder}/exercises/03_loops"
+    },
+    {
+      "name": "Exercise 04 functions",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/exercises/04_functions"
     }
   ]
 }
