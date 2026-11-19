@@ -109,8 +109,11 @@ func ParseKeyValue(s string) (key, value string, ok bool) {
 
 // Exercise 8: SumCSV
 //
-// Sum a comma-separated list of integers. Spaces around numbers are allowed.
-// An empty string sums to 0. Return an error if any item isn't a number.
+// Sum a comma-separated list of integers.
+// Rules:
+// 1) Spaces around numbers are allowed.
+// 2) An empty string (i.e. "") is valid, and sums up to 0.
+// 3) function should Return an error if any item isn't a number. i.e. a letter, an empty string, etc.
 //
 //	SumCSV("1,2,3")     → 6, nil
 //	SumCSV(" 4 , 5 ")   → 9, nil
