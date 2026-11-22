@@ -121,8 +121,10 @@ func DoubledCopy(nums []int) []int {
 
 func SortedDesc(nums []int) []int {
 	result := slices.Clone(nums)
-	slices.Sort(result)
-	slices.Reverse(result)
+	// Solution 2:
+	sort.Slice(slice, func(i, j int) bool {
+		return slice[i] > slice[j]
+	})
 	return result
 }
 
