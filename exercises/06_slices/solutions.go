@@ -129,12 +129,27 @@ func SortedDesc(nums []int) []int {
 }
 
 func ContainsAll(haystack, needles []int) bool {
-	for _, n := range needles {
-		if !slices.Contains(haystack, n) {
+	// Solution 1: self implementation
+	for _, needle := range needles {
+		isFound := false
+		for _, hayNeedle := range haystack {
+			if needle == hayNeedle {
+				isFound = true
+				break
+			}
+		}
+		if !isFound {
 			return false
 		}
 	}
 	return true
+	// Solution 2: using slices.Contains
+	// for _, n := range needles {
+	// 	if !slices.Contains(haystack, n) {
+	// 		return false
+	// 	}
+	// }
+	// return true
 }
 
 func DoubleArray(arr [3]int) [3]int {
