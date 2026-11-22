@@ -98,10 +98,17 @@ func RotateLeft(nums []int, k int) []int {
 	if len(nums) == 0 {
 		return []int{}
 	}
+	// Solution 1:
 	k %= len(nums)
 	result := make([]int, 0, len(nums))
 	result = append(result, nums[k:]...)
 	return append(result, nums[:k]...)
+	// Solution 2:
+	// sliceResult := []int{}
+	// for i := range nums {
+	// 	sliceResult = append(sliceResult, nums[(i+k)%len(nums)])
+	// }
+	// return sliceResult
 }
 
 func DoubledCopy(nums []int) []int {
