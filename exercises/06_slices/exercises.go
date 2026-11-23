@@ -1,23 +1,5 @@
 //go:build !solutions
 
-// Package slicesx covers arrays and slices. (It's not called "slices" so it
-// doesn't clash with the standard library "slices" package.)
-//
-// Quick syntax reminder:
-//
-//	var arr [3]int                 // array: fixed size, part of the type, copied by value
-//	s := []int{1, 2, 3}            // slice: a view over an underlying array
-//	s = make([]int, len, cap)      // allocate a slice
-//	s = append(s, 4, 5)            // append (may allocate a new array!)
-//	s = append(s, other...)        // append another slice
-//	s[1:3]                         // sub-slice: SHARES memory with s
-//	n := copy(dst, src)            // copy elements into an existing slice
-//	len(s), cap(s)
-//	slices.Contains, slices.Index, slices.Sort, slices.Reverse, slices.Clone ...
-//
-// The #1 slice gotcha: sub-slices and appends can share memory with the
-// original slice, so modifying one can modify the other. Several exercises
-// below require you to NOT modify the input.
 package slicesx
 
 // Exercise 1: MakeRange

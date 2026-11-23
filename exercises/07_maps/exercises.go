@@ -1,22 +1,5 @@
 //go:build !solutions
 
-// Package mapsx covers maps. (It's not called "maps" so it doesn't clash with
-// the standard library "maps" package.)
-//
-// Quick syntax reminder:
-//
-//	m := map[string]int{"a": 1}   // map literal
-//	m = make(map[string]int)      // empty map
-//	m["b"] = 2                    // insert / update
-//	v := m["missing"]             // missing keys return the zero value (0)
-//	v, ok := m["b"]               // "comma ok": ok tells you if the key exists
-//	delete(m, "b")
-//	for k, v := range m { }       // iteration order is RANDOM
-//	len(m)
-//	set := map[string]struct{}{}  // a set: values carry no data
-//
-//	var m map[string]int          // a nil map: reading is fine, WRITING PANICS
-//	maps.Keys(m), slices.Sorted(maps.Keys(m))  // sorted keys (Go 1.23+)
 package mapsx
 
 // Exercise 1: WordCount

@@ -1,20 +1,5 @@
 //go:build !solutions
 
-// Package loops covers Go's only loop keyword: for.
-//
-// Quick syntax reminder:
-//
-//	for i := 0; i < 10; i++ { }     // classic three-part loop
-//	for i := range 10 { }           // i = 0..9 (Go 1.22+)
-//	for n < 100 { }                 // "while" loop
-//	for { }                         // infinite loop (exit with break/return)
-//	for i, v := range slice { }     // index and value
-//	for _, v := range slice { }     // value only (_ discards the index)
-//	for i, r := range "héllo" { }   // byte index and rune (unicode character)
-//
-//	break / continue                // work as you'd expect
-//	outer:                          // a label lets you break out of
-//	for ... { for ... { break outer } }   // nested loops
 package loops
 
 // Exercise 1: SumTo

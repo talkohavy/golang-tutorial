@@ -1,17 +1,5 @@
 //go:build !solutions
 
-// Package functions covers multiple/named return values, variadic functions,
-// functions as values, closures, recursion and defer.
-//
-// Quick syntax reminder:
-//
-//	func add(a, b int) int { return a + b }
-//	func divmod(a, b int) (q, r int) { q = a / b; r = a % b; return }  // named returns
-//	func sum(nums ...int) int { }          // variadic: nums is a []int
-//	sum(1, 2, 3); sum(slice...)            // calling a variadic function
-//	f := func(x int) int { return x * 2 }  // function literal (anonymous function)
-//	type Op func(int, int) int             // a function type
-//	defer fmt.Println("runs when the surrounding function returns")
 package functions
 
 // Exercise 1: MinMax

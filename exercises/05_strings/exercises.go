@@ -1,23 +1,5 @@
 //go:build !solutions
 
-// Package stringsx covers strings, bytes, runes and the strings/strconv/unicode
-// packages. (It's not called "strings" so it doesn't clash with the standard
-// library package you'll be importing.)
-//
-// Quick syntax reminder:
-//
-//	s := "héllo"
-//	len(s)                       // number of BYTES (6 here, é takes 2 bytes)
-//	s[0]                         // a byte (uint8)
-//	for i, r := range s { }      // r is a rune (int32, a unicode code point)
-//	[]rune(s)                    // convert to runes to index characters safely
-//	string(runes)                // convert back
-//	strings.ToUpper, strings.Split, strings.Fields, strings.Contains,
-//	strings.Repeat, strings.Cut, strings.TrimSpace, strings.Join ...
-//	strconv.Itoa(42), strconv.Atoi("42")
-//	var b strings.Builder; b.WriteString("x"); b.String()
-//
-// Strings are immutable: you build new strings, you never modify one in place.
 package stringsx
 
 // Exercise 1: Reverse

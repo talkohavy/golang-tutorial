@@ -1,36 +1,6 @@
 //go:build !solutions
 
-// Package basics covers variables, constants, basic types, conversions and
-// formatting strings with fmt.
-//
-// Quick syntax reminder:
-//
-//	var x int = 5          // explicit type
-//	var y = 5              // type inferred from the value
-//	z := 5                 // short declaration (only inside functions)
-//	const Pi = 3.14        // constant
-//	f := float64(x)        // conversion: Go never converts types implicitly
-//	a, b = b, a            // multiple assignment
-//	s := fmt.Sprintf("%s is %d", "Bob", 42)
-//
-// Useful fmt verbs: %d (int), %s (string), %q (quoted string), %f / %.2f
-// (float), %t (bool), %v (any value), %T (the type of a value).
 package basics
-
-// Weekday is a custom type whose underlying type is int. The constants below
-// use iota, which starts at 0 and increments by one on every line of the
-// const block. This is Go's idiomatic way to declare enums.
-type Weekday int
-
-const (
-	Sunday Weekday = iota
-	Monday
-	Tuesday
-	Wednesday
-	Thursday
-	Friday
-	Saturday
-)
 
 // Exercise 1: Greeting
 //
@@ -168,6 +138,21 @@ func Describe(name string, age int) string {
 	// TODO: implement
 	return ""
 }
+
+// Weekday is a custom type whose underlying type is int. The constants below
+// use iota, which starts at 0 and increments by one on every line of the
+// const block. This is Go's idiomatic way to declare enums.
+type Weekday int
+
+const (
+	Sunday Weekday = iota
+	Monday
+	Tuesday
+	Wednesday
+	Thursday
+	Friday
+	Saturday
+)
 
 // Exercise 12: IsWeekend
 //

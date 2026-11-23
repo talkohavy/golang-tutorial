@@ -1,26 +1,5 @@
 //go:build !solutions
 
-// Package conditionals covers if/else and switch.
-//
-// Quick syntax reminder:
-//
-//	if x > 0 {               // no parentheses, braces are mandatory
-//	} else if x < 0 {
-//	} else {
-//	}
-//
-//	if v := compute(); v > 10 {   // "if with a short statement": v only
-//	}                             // exists inside the if/else blocks
-//
-//	switch day {
-//	case "Sat", "Sun":       // several values in one case
-//	default:
-//	}                        // no fallthrough by default, no "break" needed
-//
-//	switch {                 // tagless switch = a cleaner if/else-if chain
-//	case x < 0:
-//	case x > 100:
-//	}
 package conditionals
 
 // Exercise 1: Sign
