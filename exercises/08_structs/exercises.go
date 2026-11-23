@@ -20,6 +20,8 @@
 //
 //	type Animal struct { Name string }
 //	type Dog struct { Animal; Breed string }      // embedding: Dog gets Animal's fields & methods
+//	d := Dog{Animal: Animal{Name: "Rex"}, Breed: "Beagle"} // literal: set the embedded struct by its type name
+//	d.Name                                        // promoted field: same as d.Animal.Name
 //
 // Rule of thumb: if any method needs a pointer receiver, use pointer receivers
 // for all methods of that type.
@@ -236,6 +238,10 @@ type Dog struct {
 //	d := NewDog("Rex", "Beagle")
 //	d.Name    → "Rex"          (promoted field from Animal)
 //	d.Speak() → "Rex says Woof" (promoted method from Animal)
+//
+// Note: promoted fields can be read and assigned (d.Name = "Max"), but before
+// Go 1.27 they can't be named in a struct literal: Dog{Name: name} won't
+// compile. Set the embedded struct instead: Dog{Animal: Animal{...}, ...}.
 func (a Animal) Speak() string {
 	// TODO: implement
 	return ""
