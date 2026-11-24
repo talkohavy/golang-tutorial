@@ -1,4 +1,7 @@
 {
   "cursor.cpp.disabledLanguages": ["go"],
-  "cSpell.words": ["nums"]
+  "cSpell.words": ["nums"],
+  "gopls": {
+    "ui.completion.experimentalPostfixCompletions": false // <--- enable/disable code snippets for Golang
+  }
 }
