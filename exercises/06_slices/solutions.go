@@ -121,10 +121,20 @@ func DoubledCopy(nums []int) []int {
 
 func SortedDesc(nums []int) []int {
 	result := slices.Clone(nums)
-	// Solution 2:
-	sort.Slice(slice, func(i, j int) bool {
-		return slice[i] > slice[j]
-	})
+	// Solution 1: most naive & simple
+	slices.Sort(result)
+	slices.Reverse(result)
+	// Solution 2: the newest way
+	slices.SortFunc(
+		slice,
+		func(a, b int) int {
+			return cmp.Compare(b, a)
+		})
+	// Solution 3: the old way (before Go version 1.22)
+	// sort.Slice(slice, func(i, j int) bool {
+	// 	return slice[i] > slice[j]
+	// })
+	// -----------
 	return result
 }
 
