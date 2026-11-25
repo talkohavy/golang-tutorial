@@ -4,6 +4,9 @@
 //	go run ./cmd/progress              # summary of every topic
 //	go run ./cmd/progress 03_loops     # exercise-by-exercise detail for one topic
 //	go run ./cmd/progress -solutions   # run against the reference solutions
+//
+// A topic is either a single package (exercises/03_loops) or a folder of
+// exercise packages (exercises/08_structs/01_person, ...).
 package main
 
 import (
@@ -25,24 +28,76 @@ import (
 
 const exercisesDir = "exercises"
 
-type topic struct {
-	name        string
-	tests       []string          // top-level test names, in source order
-	status      map[string]string // test name → "pass" / "fail" / "skip"
+// testRef identifies a top-level test. pkg is the exercise folder inside the
+// topic, or "" when the topic is a single package.
+type testRef struct {
+	pkg  string
+	name string
+}
+
+type pkgResult struct {
 	buildFailed bool
 	panicked    bool
 	panicFrame  bool
 	output      []string // compiler errors or panic details
 }
 
+type topic struct {
+	name   string
+	nested bool               // exercises live in sub-packages
+	tests  []testRef          // in source order
+	status map[testRef]string // "pass" / "fail" / "skip"
+	pkgs   map[string]*pkgResult
+}
+
+func (t *topic) pkg(name string) *pkgResult {
+	r := t.pkgs[name]
+	if r == nil {
+		r = &pkgResult{}
+		t.pkgs[name] = r
+	}
+	return r
+}
+
 func (t *topic) passed() int {
 	n := 0
-	for _, name := range t.tests {
-		if t.status[name] == "pass" {
+	for _, ref := range t.tests {
+		if t.status[ref] == "pass" {
 			n++
 		}
 	}
 	return n
+}
+
+// pkgNames lists the packages holding tests, in source order.
+func (t *topic) pkgNames() []string {
+	var names []string
+	for _, ref := range t.tests {
+		if !slices.Contains(names, ref.pkg) {
+			names = append(names, ref.pkg)
+		}
+	}
+	return names
+}
+
+func (t *topic) anyPanicked() bool {
+	for _, r := range t.pkgs {
+		if r.panicked {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *topic) dir(pkg string) string {
+	return path.Join(exercisesDir, t.name, pkg)
+}
+
+func (t *topic) file(pkg string) string {
+	if pkg == "" {
+		return path.Join(t.dir(pkg), "exercises.go")
+	}
+	return path.Join(t.dir(pkg), "exercise.go")
 }
 
 // testEvent is one line of `go test -json` output.
@@ -100,11 +155,26 @@ func discoverTopics(only string) ([]*topic, error) {
 		if !e.IsDir() || (only != "" && e.Name() != only) {
 			continue
 		}
-		files, _ := filepath.Glob(filepath.Join(exercisesDir, e.Name(), "*_test.go"))
+		dir := filepath.Join(exercisesDir, e.Name())
+		flat, _ := filepath.Glob(filepath.Join(dir, "*_test.go"))
+		nested, _ := filepath.Glob(filepath.Join(dir, "*", "*_test.go"))
+		files := slices.Concat(flat, nested)
 		slices.Sort(files)
-		t := &topic{name: e.Name(), status: map[string]string{}}
+		t := &topic{
+			name:   e.Name(),
+			nested: len(nested) > 0,
+			status: map[testRef]string{},
+			pkgs:   map[string]*pkgResult{},
+		}
 		fset := token.NewFileSet()
 		for _, f := range files {
+			pkg, err := filepath.Rel(dir, filepath.Dir(f))
+			if err != nil {
+				return nil, err
+			}
+			if pkg == "." {
+				pkg = ""
+			}
 			file, err := parser.ParseFile(fset, f, nil, parser.SkipObjectResolution)
 			if err != nil {
 				return nil, err
@@ -112,7 +182,7 @@ func discoverTopics(only string) ([]*topic, error) {
 			for _, decl := range file.Decls {
 				fn, ok := decl.(*ast.FuncDecl)
 				if ok && fn.Recv == nil && strings.HasPrefix(fn.Name.Name, "Test") && fn.Name.Name != "TestMain" {
-					t.tests = append(t.tests, fn.Name.Name)
+					t.tests = append(t.tests, testRef{pkg: filepath.ToSlash(pkg), name: fn.Name.Name})
 				}
 			}
 		}
@@ -129,7 +199,7 @@ func runTests(topics []*topic, solutions bool) error {
 	}
 	for _, t := range topics {
 		byName[t.name] = t
-		args = append(args, "./"+exercisesDir+"/"+t.name)
+		args = append(args, "./"+exercisesDir+"/"+t.name+"/...")
 	}
 
 	cmd := exec.Command("go", args...)
@@ -150,28 +220,29 @@ func runTests(topics []*topic, solutions bool) error {
 		if json.Unmarshal(scanner.Bytes(), &ev) != nil {
 			continue
 		}
-		pkg := ev.Package
-		if pkg == "" {
-			pkg = ev.ImportPath
+		importPath := ev.Package
+		if importPath == "" {
+			importPath = ev.ImportPath
 		}
-		// ImportPath for build output can look like "mod/exercises/01_basics [mod/exercises/01_basics.test]".
-		t := byName[path.Base(strings.Fields(pkg + " ")[0])]
+		topicName, pkg := locate(importPath)
+		t := byName[topicName]
 		if t == nil {
 			continue
 		}
+		r := t.pkg(pkg)
 		switch {
 		case ev.Action == "build-output":
-			t.output = append(t.output, strings.TrimRight(ev.Output, "\n"))
+			r.output = append(r.output, strings.TrimRight(ev.Output, "\n"))
 		case ev.Action == "build-fail" || ev.FailedBuild != "":
-			t.buildFailed = true
+			r.buildFailed = true
 		case ev.Test != "" && !strings.Contains(ev.Test, "/"):
 			switch ev.Action {
 			case "pass", "fail", "skip":
-				t.status[ev.Test] = ev.Action
+				t.status[testRef{pkg: pkg, name: ev.Test}] = ev.Action
 			}
 		}
 		if ev.Action == "output" {
-			collectPanic(t, ev)
+			collectPanic(r, ev)
 		}
 	}
 	// A non-zero exit status just means some tests failed, which is expected.
@@ -183,28 +254,47 @@ func runTests(topics []*topic, solutions bool) error {
 	return nil
 }
 
+// locate splits an import path such as "mod/exercises/08_structs/01_person"
+// into its topic ("08_structs") and exercise package ("01_person", or "" for a
+// single-package topic). Build output import paths can carry a suffix, like
+// "mod/exercises/01_basics [mod/exercises/01_basics.test]".
+func locate(importPath string) (topic, pkg string) {
+	importPath = strings.Fields(importPath + " ")[0]
+	_, rest, ok := strings.Cut(importPath, "/"+exercisesDir+"/")
+	if !ok {
+		return "", ""
+	}
+	topic, pkg, _ = strings.Cut(rest, "/")
+	return topic, pkg
+}
+
 // collectPanic keeps the panic message and the first stack frame located in
 // the learner's exercise file, so the summary can point at the faulty line.
-func collectPanic(t *topic, ev testEvent) {
+func collectPanic(r *pkgResult, ev testEvent) {
 	line := strings.TrimSpace(ev.Output)
 	switch {
 	case strings.HasPrefix(line, "panic: "):
-		t.panicked = true
-		t.output = append(t.output, line)
-	case t.panicked && !t.panicFrame && strings.Contains(line, "/"+exercisesDir+"/") &&
+		r.panicked = true
+		r.output = append(r.output, line)
+	case r.panicked && !r.panicFrame && strings.Contains(line, "/"+exercisesDir+"/") &&
 		strings.Contains(line, ".go:") && !strings.Contains(line, "_test.go"):
-		t.panicFrame = true
+		r.panicFrame = true
 		if i := strings.Index(line, exercisesDir+"/"); i >= 0 {
 			line = line[i:]
 		}
-		t.output = append(t.output, "at "+strings.Fields(line)[0])
+		r.output = append(r.output, "at "+strings.Fields(line)[0])
 	}
 }
 
 func anyResults(topics []*topic) bool {
 	for _, t := range topics {
-		if len(t.status) > 0 || t.buildFailed {
+		if len(t.status) > 0 {
 			return true
+		}
+		for _, r := range t.pkgs {
+			if r.buildFailed {
+				return true
+			}
 		}
 	}
 	return false
@@ -228,7 +318,7 @@ func printSummary(topics []*topic) {
 	fmt.Println()
 	done, total := 0, 0
 	var next *topic
-	var nextTest string
+	var nextTest testRef
 	for _, t := range topics {
 		p := t.passed()
 		done += p
@@ -238,16 +328,18 @@ func printSummary(topics []*topic) {
 			mark = "✅"
 		}
 		note := ""
-		if t.buildFailed {
+		// In a nested topic, exercises you haven't started don't compile yet,
+		// which is expected, so only single-package topics get this warning.
+		if r := t.pkgs[""]; !t.nested && r != nil && r.buildFailed {
 			note = "  ⚠️  does not compile"
-		} else if t.panicked {
+		} else if t.anyPanicked() {
 			note = "  💥 a test panicked"
 		}
 		fmt.Printf("  %s %-18s %s  %3d/%-3d%s\n", mark, t.name, bar(p, len(t.tests), 24), p, len(t.tests), note)
 		if next == nil {
-			for _, name := range t.tests {
-				if t.status[name] != "pass" {
-					next, nextTest = t, name
+			for _, ref := range t.tests {
+				if t.status[ref] != "pass" {
+					next, nextTest = t, ref
 					break
 				}
 			}
@@ -260,13 +352,17 @@ func printSummary(topics []*topic) {
 	fmt.Println()
 	fmt.Printf("  Total: %d/%d exercises solved (%d%%)\n", done, total, pct)
 	if next != nil {
+		label := exerciseName(nextTest.name)
+		if nextTest.pkg != "" {
+			label = nextTest.pkg + " → " + label
+		}
 		fmt.Println()
-		fmt.Printf("  Next up: %s → %s\n", next.name, exerciseName(nextTest))
-		fmt.Printf("    open    %s/%s/exercises.go\n", exercisesDir, next.name)
-		fmt.Printf("    test    go test ./%s/%s -run '^%s$'\n", exercisesDir, next.name, nextTest)
+		fmt.Printf("  Next up: %s → %s\n", next.name, label)
+		fmt.Printf("    open    %s\n", next.file(nextTest.pkg))
+		fmt.Printf("    test    go test ./%s -run '^%s$'\n", next.dir(nextTest.pkg), nextTest.name)
 		fmt.Printf("    detail  go run ./cmd/progress %s\n", next.name)
-		if next.buildFailed || next.panicked {
-			printOutput(next)
+		if r := next.pkgs[nextTest.pkg]; r != nil && (r.buildFailed || r.panicked) {
+			printOutput(r.output)
 		}
 	} else if total > 0 {
 		fmt.Println()
@@ -277,37 +373,65 @@ func printSummary(topics []*topic) {
 
 func printDetail(t *topic) {
 	fmt.Println()
-	fmt.Printf("  %s: %d/%d solved\n\n", t.name, t.passed(), len(t.tests))
-	if t.buildFailed {
-		fmt.Println("  ⚠️  This package does not compile, so no test could run.")
-		printOutput(t)
+	fmt.Printf("  %s: %d/%d solved\n", t.name, t.passed(), len(t.tests))
+	if !t.nested {
 		fmt.Println()
-		return
 	}
-	for i, name := range t.tests {
+	indent := "  "
+	if t.nested {
+		indent = "    "
+	}
+	pkg, n := "", 0
+	for i, ref := range t.tests {
+		if t.nested && (i == 0 || ref.pkg != pkg) {
+			pkg, n = ref.pkg, 0
+			fmt.Printf("\n  %s\n", pkg)
+		}
+		n++
 		icon := "❌"
-		switch t.status[name] {
+		switch t.status[ref] {
 		case "pass":
 			icon = "✅"
 		case "skip":
 			icon = "⏭️ "
 		case "":
 			icon = "💥" // never ran: an earlier test probably panicked
+			if r := t.pkgs[ref.pkg]; r != nil && r.buildFailed {
+				icon = "⬜" // doesn't compile (yet)
+			}
 		}
-		fmt.Printf("  %s %2d. %s\n", icon, i+1, exerciseName(name))
+		fmt.Printf("%s%s %2d. %s\n", indent, icon, n, exerciseName(ref.name))
 	}
-	if len(t.output) > 0 {
-		fmt.Println()
-		fmt.Println("  A test panicked, so the tests after it did not run (💥):")
-		printOutput(t)
+
+	// Only the first package that doesn't compile is reported: in a nested
+	// topic, the ones after it are usually exercises you haven't started.
+	for _, name := range t.pkgNames() {
+		if r := t.pkgs[name]; r != nil && r.buildFailed {
+			fmt.Println()
+			fmt.Printf("  ⬜ %s does not compile (yet), so its tests could not run:\n", t.dir(name))
+			printOutput(r.output)
+			break
+		}
+	}
+	for _, name := range t.pkgNames() {
+		if r := t.pkgs[name]; r != nil && r.panicked {
+			fmt.Println()
+			fmt.Printf("  💥 A test panicked in %s, so the tests after it did not run:\n", t.dir(name))
+			printOutput(r.output)
+		}
+	}
+
+	target := t.dir("")
+	if t.nested {
+		target += "/..."
 	}
 	fmt.Println()
-	fmt.Printf("  See failure details with: go test ./%s/%s\n\n", exercisesDir, t.name)
+	fmt.Printf("  See failure details with: go test ./%s\n\n", target)
 }
 
-func printOutput(t *topic) {
+func printOutput(lines []string) {
 	fmt.Println()
-	for _, line := range t.output {
+	for _, line := range lines {
 		if line != "" {
 			fmt.Println("    " + line)
 		}

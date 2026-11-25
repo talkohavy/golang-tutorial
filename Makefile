@@ -7,7 +7,7 @@ progress:
 # Run the tests of one topic with full failure details: make test topic=03_loops
 test:
 	@if [ -z "$(topic)" ]; then echo "usage: make test topic=03_loops"; exit 1; fi
-	go test ./exercises/$(topic)
+	go test ./exercises/$(topic)/...
 
 # Check that the reference solutions pass every test.
 solutions:

@@ -44,11 +44,11 @@
       "program": "${workspaceFolder}/exercises/07_maps"
     },
     {
-      "name": "Exercise 08 structs",
+      "name": "Exercise 08 structs (folder of the open file)",
       "type": "go",
       "request": "launch",
       "mode": "test",
-      "program": "${workspaceFolder}/exercises/08_structs"
+      "program": "${fileDirname}"
     }
   ]
 }

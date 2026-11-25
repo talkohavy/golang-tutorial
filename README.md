@@ -1,6 +1,6 @@
 # Go Playground
 
-200 small, test-driven exercises for getting fluent in Go syntax, from `for` loops to goroutines.
+200+ small, test-driven exercises for getting fluent in Go syntax, from `for` loops to goroutines.
 
 Each exercise is a function with a `// TODO` body and a test that checks it. Your job: make the tests pass.
 
@@ -33,7 +33,7 @@ Work through them in order; each topic builds on the previous ones.
 | `05_strings` | 14 | bytes vs runes, `strings`, `strconv`, `unicode`, `strings.Builder` |
 | `06_slices` | 16 | arrays, slices, `append`, `copy`, aliasing gotchas, `slices` package |
 | `07_maps` | 15 | maps, comma-ok, sets, nested maps, sorting keys |
-| `08_structs` | 14 | structs, methods, constructors, embedding, encapsulation, JSON tags |
+| `08_structs` | 45 | structs, methods, constructors, embedding, encapsulation, JSON tags (blank-canvas format, see below) |
 | `09_pointers` | 12 | pointers, value vs reference semantics, linked lists |
 | `10_interfaces` | 14 | interfaces, `Stringer`, `io.Writer`, `sort.Interface`, type switches |
 | `11_errors` | 11 | errors, sentinel/custom errors, wrapping, `errors.Is/As`, panic/recover |
@@ -42,7 +42,7 @@ Work through them in order; each topic builds on the previous ones.
 | `14_iterators` | 8 | range-over-func iterators, `iter.Seq`, `yield` |
 | `15_challenges` | 18 | classic puzzles: FizzBuzz, Roman numerals, two-sum, spiral matrix... |
 
-Every topic's `exercises.go` starts with a short syntax cheat sheet.
+Every topic's `exercises.go` (or `doc.go` for `08_structs`) starts with a short syntax cheat sheet.
 
 Go has no classes: `08_structs` shows the idiomatic replacement (structs + methods + constructor functions + embedding), and `10_interfaces` covers polymorphism.
 
@@ -55,16 +55,37 @@ exercises/
     exercises_test.go    ← the tests (read them when you're stuck!)
     solutions.go         ← reference solutions (spoilers!)
   ...
+  08_structs/
+    doc.go               ← cheat sheet
+    01_person/
+      exercise.go        ← a blank canvas: you write every type, function and method
+      exercise_test.go   ← one sanity-check test per step
+      solution.go        ← reference solution (spoilers!)
+    02_rectangle/
+    ...
 cmd/progress/            ← the progress tracker
+internal/testkit/        ← helpers that let blank-canvas tests run one step at a time
 scratch/main.go          ← free-form playground: go run ./scratch
 notes/main.go            ← my original lesson notes: go run ./notes
 ```
 
 It's a single Go module where each topic is its own package, which is how real Go projects are organized.
 
+### Blank-canvas topics
+
+In `08_structs`, nothing is pre-written: each exercise folder is its own small package, and its `exercise.go` holds only a description of each step. Do the steps in order and run each step's test as you go:
+
+```bash
+go test ./exercises/08_structs/02_rectangle -run '^TestArea$'   # one step
+go test ./exercises/08_structs/02_rectangle                     # one exercise
+go test ./exercises/08_structs/...                              # the whole topic
+```
+
+A compile error like `undefined: Rectangle` means the tests are waiting for something you haven't written yet. Tests look up methods by name, so a missing method only fails its own step ("Rectangle has no Perimeter method yet") instead of breaking the whole exercise.
+
 ## Solutions
 
-Each topic has a `solutions.go`. It's excluded from normal builds by a build tag (`//go:build solutions`), so it never interferes with your work. Peek only after you've solved an exercise (or are really stuck), to compare approaches.
+Each topic has a `solutions.go` (each `08_structs` exercise folder has a `solution.go`). It's excluded from normal builds by a build tag (`//go:build solutions`), so it never interferes with your work. Peek only after you've solved an exercise (or are really stuck), to compare approaches.
 
 ```bash
 go run ./cmd/progress -solutions             # proves every test passes with the reference solutions
